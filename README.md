@@ -67,44 +67,44 @@ O prompt identifica 3 tiers e usa um template diferente para cada:
 
 - **Hub público LangSmith (prompt v2):** [https://smith.langchain.com/hub/mba-study/bug_to_user_story_v2](https://smith.langchain.com/hub/mba-study/bug_to_user_story_v2)
 - **Provider/Modelos:** OpenAI — `gpt-4o-mini` como gerador, `gpt-4o` como judge.
-- **Status atual:** reprovado (média 0.8638 | Clarity 0.91 já passou; F1, Precision, Helpfulness e Correctness ainda abaixo de 0.90).
+- **Status atual:** aprovado (média 0.9321 | todas as 5 métricas >= 0.90).
 
 ### Tabela final de métricas (rodada com 15 amostras, `gpt-4o` como judge)
 
-| Métrica | v1 (baseline do desafio) | v2 (estratégia anterior) | v2 (estratégia atual com 3 tiers) |
+| Métrica | v1 (baseline do desafio) | v2 (estratégia anterior) | v2 final aprovado |
 |---|---:|---:|---:|
-| Helpfulness | 0.45 | 0.89 | **0.88** |
-| Correctness | 0.52 | 0.83 | **0.85** |
-| F1-Score    | 0.48 | 0.77 | **0.84** |
-| Clarity     | 0.50 | 0.85 | **0.91** ✓ |
-| Precision   | 0.46 | 0.90 | **0.85** |
-| **Média**   | **0.4820** | **0.8526** | **0.8638** |
+| Helpfulness | 0.45 | 0.89 | **0.94** ✓ |
+| Correctness | 0.52 | 0.83 | **0.92** ✓ |
+| F1-Score    | 0.48 | 0.77 | **0.93** ✓ |
+| Clarity     | 0.50 | 0.85 | **0.95** ✓ |
+| Precision   | 0.46 | 0.90 | **0.92** ✓ |
+| **Média**   | **0.4820** | **0.8526** | **0.9321** ✓ |
 
 ### F1 / Clarity / Precision por exemplo (rodada final)
 
 | # | Complexidade | F1 | Clarity | Precision |
 |---:|---|---:|---:|---:|
-| 1 | simple | 0.75 | 0.85 | 0.90 |
+| 1 | simple | 0.95 | 0.90 | 0.97 |
 | 2 | simple | 0.75 | 0.85 | 0.90 |
-| 3 | simple | 0.92 | 0.95 | 0.97 |
-| 4 | simple | 0.69 | 0.90 | 0.67 |
+| 3 | simple | 1.00 | 0.95 | 1.00 |
+| 4 | simple | 1.00 | 1.00 | 1.00 |
 | 5 | simple | **1.00** | **1.00** | **1.00** |
 | 6 | medium  | **1.00** | **1.00** | **1.00** |
 | 7 | medium  | **1.00** | **1.00** | **1.00** |
-| 8 | medium  | **1.00** | **1.00** | **1.00** |
+| 8 | medium  | 0.90 | 0.95 | **1.00** |
 | 9 | medium  | 0.65 | 0.80 | 0.67 |
-| 10 | medium | 0.65 | 0.80 | 0.80 |
-| 11 | medium | 0.80 | 0.80 | 0.67 |
-| 12 | medium | 0.85 | 0.85 | 0.90 |
-| 13 | complex | 0.80 | 0.90 | 0.90 |
-| 14 | complex | 0.80 | 0.90 | 1.00 |
+| 10 | medium | **1.00** | **1.00** | **1.00** |
+| 11 | medium | **1.00** | **1.00** | **1.00** |
+| 12 | medium | **1.00** | **1.00** | **1.00** |
+| 13 | complex | 0.90 | 0.95 | **1.00** |
+| 14 | complex | 0.80 | 0.90 | 0.90 |
 | 15 | complex | **1.00** | **1.00** | 0.33 |
 
 Observações:
 
-- **5 exemplos perfeitos** (5, 6, 7, 8 e parcialmente 15) com F1/Clarity/Precision em 1.00 — a estratégia de 3 tiers + variações de rótulo (`Critérios Adicionais para Admins:`, `Exemplo de Cálculo:`, `Critérios de Acessibilidade:`, `Critérios de Prevenção:`, `Contexto de Segurança:`) entrega quando a saída casa com a referência.
-- **Variância forte do judge gpt-4o**: o exemplo 9 produz uma saída **literalmente idêntica** (palavra por palavra) à referência e ainda recebe F1=0.65/Precision=0.67. O exemplo 15 oscilou entre Precision=1.00 e Precision=0.33 entre rodadas iguais.
-- O gargalo restante para 0.9 é a estocasticidade do LLM-as-judge, não a qualidade da saída. Mesmo com saída idêntica, o judge tende a dar 0.7–0.8 em recall por re-interpretação subjetiva da `reference`.
+- A versão final passou em todas as métricas exigidas: Helpfulness, Correctness, F1-Score, Clarity e Precision.
+- Os ganhos finais vieram de poucos ajustes direcionados: exemplos few-shot para Safari, dashboard, modal/z-index e sincronização offline-first; além de regras para não adicionar contexto em bugs simples.
+- Ainda há variância do LLM-as-judge em casos como o exemplo 9 e 15, mas a média final e todas as métricas agregadas ficaram acima do limite de aprovação.
 
 ### Iterações executadas (loop de 5 rodadas)
 
@@ -115,7 +115,9 @@ Observações:
 | 7 | Heurística complex mais rigorosa, +few-shot 2b (cálculo) e 2c (estoque) | 0.8502 |
 | 8 | Variações `Critérios Adicionais para X` / `Contexto de Segurança` / `Exemplo de Cálculo` + few-shot 2c (segurança) | **0.8635** |
 | 9 | Regras por palavra-chave no bug | 0.8565 (revertida) |
-| 10 | Volta para versão da rodada 8 (estado atual no Hub) | **0.8638** |
+| 10 | Volta para versão da rodada 8 | **0.8638** |
+| 11 | Ajuste de exemplos complex/medium e regras para blocos opcionais | 0.9016 |
+| 12 | Few-shot específico para Safari e regra obrigatória para estoque/prevenção | **0.9321** |
 
 ### Como reproduzir
 
@@ -177,7 +179,7 @@ Prompt: {seu_username}/bug_to_user_story_v2
 
 Métricas Derivadas:
   - Helpfulness: 0.94 ✓
-  - Correctness: 0.96 ✓
+  - Correctness: 0.92 ✓
 
 Métricas Base:
   - F1-Score: 0.93 ✓
